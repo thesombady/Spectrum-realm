@@ -46,9 +46,6 @@ class Fitting:
                 guesssigma = np.sqrt(sum(Ylist * (Xlist - mean)**2) / sum(Ylist))
                 Fit, covarience = curve_fit(gauss, Xlist, Ylist, p0 = [max(Ylist), mean, guesssigma])
                 func = lambda x: Fit[0]*np.exp(-(x-Fit[1])**2/(2*Fit[2]**2))
-                #self.FitsMade.append(func)
-                print(Fit)
-                #print(covarience)
             except Exception as e:
                 raise e
             xlist = list(XVal); ylist = list(YVal)
