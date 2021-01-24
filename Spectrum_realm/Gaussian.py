@@ -1,9 +1,9 @@
 from Background import Exponential, Linear
-from dataclasses import dataclass
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 from scipy.optimize import curve_fit
+from PhysicsNum import RiemanSum
 
 class Fitting:
     def __init__(self, Data):
@@ -16,21 +16,31 @@ class Fitting:
         self.Title = " "
         self.xlabel = " "
         self.ylabel = " "
-        self.NumberOfFits = 4
+        self.NumberOfFits = 1
         self.FitsMade = []
+        self.Error = []
+        self.Area = []
         self.Boundary = 25
+        self.PlotData()
 
     def PlotData(self):
         plt.plot(self.x,self.y, '.', markersize=2)
         plt.title(self.Title)
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
-        plt.show()
+        plt.savefig("Orignal.png")
+        plt.clf()
 
     def Manual(self, index1, index2):
         pass
 
     def AutoDetectPeaks(self):
+        del self.FitsMade
+        del self.Error
+        del self.Area
+        self.Error = []
+        self.Area = []
+        self.FitsMade = []
         XVal = self.x.copy()
         YVal = self.y.copy()
         gauss = lambda x, a, mu, sigma: a*np.exp(-(x - mu)**2/(2*sigma**2))
@@ -53,6 +63,8 @@ class Fitting:
             XVal = np.array(xlist); YVal = np.array(ylist)
             ylist = func(dlist)
             self.FitsMade.append((dlist, ylist))
+            self.Error.append(covarience)
+            self.Area.append(RiemanSum(func, self.x[0], self.x[-1]))
 
     def BackgroundCal(self, func):
         if not callable(func):
@@ -64,42 +76,18 @@ class Fitting:
         self.Background = ylist
 
     def PlotFits(self):
-        plt.plot(self.x, self.y, '.', markersize = 1, label = "Data")
-        for i in range(len(self.FitsMade)):
-            if not isinstance(self.Background, (np.ndarray, np.generic)):
-                Background = 0
-            else:
-                Background = self.Background
-            plt.plot(self.FitsMade[i][0], self.FitsMade[i][1] + Background, '-', label = f"Fit to peak {i+1}")
-            print(max(self.FitsMade[i][1]))
-        plt.legend()
-        plt.grid()
-        plt.show()
-
-
-
-
-def Parser(Path):
-    """Parser function provides the parsered data provided from a .xyd file. This method requires that the data
-    is strictly ordered"""
-    try:
-        with open(Path, 'r') as file:
-            Data = file.readlines()
-        Xlist = []
-        Ylist = []
-        for i in range(len(Data)):
-            Values = Data[i].split(' ')
-            val2 = Values[-1].replace("\n", '')#Remove a newline and replace by nothing
-            Xlist.append(float(Values[0]))
-            Ylist.append(float(val2))
-        return np.array(Xlist), np.array(Ylist)
-    except:
-        raise Exception("[Parser]: Cant find the input")
-
-
-a = Fitting(Parser(os.path.join("/Users/andreasevensen/Desktop/Uni/Semester4/XrayDiffraction", "AG.xyd")))
-a.Title = "Test"
-a.AutoDetectPeaks()
-a.BackgroundCal(Exponential)
-a.PlotFits()
-#a.PlotData()
+        if len(self.FitsMade) != 0:
+            plt.plot(self.x, self.y, '.', markersize = 1, label = "Data")
+            for i in range(len(self.FitsMade)):
+                if not isinstance(self.Background, (np.ndarray, np.generic)):
+                    Background = 0
+                else:
+                    Background = self.Background
+                plt.plot(self.FitsMade[i][0], self.FitsMade[i][1] + Background, '-', label = f"Fit to peak {i+1}")
+                #print(max(self.FitsMade[i][1]))
+            plt.legend()
+            plt.grid()
+            plt.savefig("Current.png")
+            plt.clf()
+        else:
+            pass
