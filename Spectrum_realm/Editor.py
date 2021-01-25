@@ -16,14 +16,15 @@ def Find():
         Data = Fitting(Parser.Parser(Path))
     except:
         messagebox.showwarning("Error", message="Loading data failed.")
-    Handler.Data = Data
+    HandlerProgram.Data = Data
+    HandlerProgram.View()
 
 
 class Handler:
     Data = None
     def __init__(self, root):
         self.root = root
-        self.root.geometry("1500x800")
+        self.root.geometry("1250x600")
         self.root.title("Spectrum Realm")
         Menubar = tk.Menu(root)
         Filemenu = tk.Menu(Menubar)
@@ -33,22 +34,17 @@ class Handler:
         self.root.config(menu = Menubar)
 
 
-
-        Label1 = ttk.Label(self.root, text = "Number of peaks").grid(column = 1, row=1)
+        Label1 = ttk.Label(self.root, text = "Number of peaks").grid(column = 1, row = 1)
         self.NumberOfGaussiansval = tk.StringVar()
         self.NumberOfGaussiansval.set(1)
         self.NumberOfGaussians = ttk.Spinbox(self.root, from_ = 1, to = 20, textvariable = self.NumberOfGaussiansval,
-            command = self.Update).grid(column = 1, row = 2)
+            command = self.Update).grid(column = 1, row = 3)
         self.Boundaryval = tk.StringVar()
         self.Boundaryval.set(25)
-        Label2 = ttk.Label(self.root, text = "Number of points to include").grid(column = 1, row = 3)
+        Label2 = ttk.Label(self.root, text = "Number of points to include").grid(column = 1, row = 5)
         self.Boundary = ttk.Spinbox(self.root, from_ = 25, to = 100, textvariable = self.Boundaryval,
-            command = self.Update).grid(column = 1, row = 4)
-        Btn1 = ttk.Button(root, text = "Apply", command = self.Update).grid(column = 1, row = 5)
-        self.ViewData = tk.Text(master = self.root, height = 5, width = 10).grid(column = 2, row = 2)
-        #self.Scrollbar = tk.Scrollbar(master = self.root).grid(column = 2, row = 2)
-        #self.Scrollbar.config(command = self.ViewData.yview)
-        #self.Viewdata.config(yscrollcommand=self.Scrollbar.set)
+            command = self.Update).grid(column = 1, row = 7)
+        Btn1 = ttk.Button(root, text = "Apply", command = self.Update).grid(column = 1, row = 9)
 
 
     def Update(self):
@@ -59,35 +55,35 @@ class Handler:
                 self.Data.NumberOfFits = int(self.NumberOfGaussiansval.get())
                 self.Data.Boundary = int(self.Boundaryval.get())
                 self.Data.AutoDetectPeaks()
-                self.Data.PlotFits()
-                #self.ViewData.delete('1.0', tk.END)
-                #self.ViewData.insert(tk.END, self.Data.Data())
+                text1 = tk.Text(master = self.root, height = 30, width = 50)
+                text1.grid(column = 3, row = 1,rowspan = 9)
+                scrollb = ttk.Scrollbar(master = self.root, command=text1.yview)
+                scrollb.grid(column = 4, row=2, rowspan = 9, sticky='nsew')
+                text1['yscrollcommand'] = scrollb.set
+                text1.grid(column = 3, row=2, rowspan = 9)
+                text1.insert(tk.INSERT, self.Data.Data())
+                self.View()
             except Exception as e:
                 raise e
-            self.View()
 
     def Manual(self):
         if Data == None:
             messagebox.showwarning("Error", message="Needs data.")
         else:
             Level = tk.Toplevel(master = self.root)
-            Level.geometry("600x500")
+            Level.geometry("800x600")
             ManualFits(Level, self.Data)
 
     def View(self):
-        load1 = Image.open(os.path.join(os.getcwd(),"Orignal.png"))
-        render1 = ImageTk.PhotoImage(load1)
-        img1 = tk.Label(self.root, image = render1)
-        img1.image = render1
-        img1.grid(column = 2, row = 1)
         try:
-            load2 = Image.open(os.path.join(os.getcwd(),"Current.png"))
-            render2 = ImageTk.PhotoImage(load2)
-            img2 = tk.Label(self.root, image = render2)
-            img2.image = render2
-            img2.grid(column = 3, row = 1)
-        except:
-            pass
+            self.Data.PlotFits()
+            load1 = Image.open(os.path.join(os.getcwd(),"Current.png"))
+            render1 = ImageTk.PhotoImage(load1)
+            img1 = tk.Label(self.root, image = render1)
+            img1.image = render1
+            img1.grid(column = 2, row = 1, rowspan = 9)
+        except Exception as e:
+            raise e
 
 class ManualFits():
     def __init__(self, root, Data):
@@ -107,6 +103,7 @@ class ManualFits():
         self.Scale1val.set(1)
         self.Scale2val.set(25)
         Btn1 = ttk.Button(master = self.master, text = "Apply fit", command = self.Commit).grid(column = 1, row = 3)
+        self.Update1()
 
     def Update1(self, value = None):
         index = int(self.Scale1val.get())
@@ -117,7 +114,7 @@ class ManualFits():
             render2 = ImageTk.PhotoImage(load2)
             img2 = tk.Label(self.master, image = render2)
             img2.image = render2
-            img2.grid(column = 3, row = 4)
+            img2.grid(column = 3, row = 1, rowspan = 4)
         except Exception as e:
             raise e
 
@@ -132,8 +129,8 @@ class ManualFits():
 
 
 if __name__ == '__main__':
-    global root
+    global root, HandlerProgram
     Data = None
     root = tk.Tk()
-    Handler(root)
+    HandlerProgram = Handler(root)
     root.mainloop()

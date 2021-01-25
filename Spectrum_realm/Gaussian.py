@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from scipy.optimize import curve_fit
 from PhysicsNum import RiemanSum
+import time
 
 class Fitting:
     def __init__(self, Data):
@@ -33,7 +34,7 @@ class Fitting:
         plt.title(self.Title)
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
-        plt.savefig("Orignal.png")
+        plt.savefig("Current.png")
         plt.clf()
 
     def Manual(self, index, boundary):
@@ -119,12 +120,14 @@ class Fitting:
                     Background = self.Background
                 plt.plot(self.FitsMade[i][0], self.FitsMade[i][1] + Background, '-', label = f"Fit to peak {i+1}")
                 #print(max(self.FitsMade[i][1]))
+            """
             for i in range(len(self.ManualFits)):
                 if not isinstance(self.Background, (np.ndarray, np.generic)):
                     Background = 0
                 else:
                     Background = self.Background
                 plt.plot(self.ManualFits[i][0], self.ManualFits[i][1] + Background, label = f"Manual fits{i+1}")
+            """
             plt.legend()
             plt.grid()
             plt.savefig("Current.png")
@@ -137,5 +140,5 @@ class Fitting:
         for i in range(len(self.Error)):
             text = text + f"Covarience {self.Error[i]} for automated peak {i+1}\n"
             text = text + f"Area  = {self.Area[i]}for automated peak {i+1}\n"
-            text = text + f"Amplitude = {self.FitsMadeVal[i][0]}\n Mu = {self.FitsMadeVal[i][1]}\n Error = {self.FitsMadeVal[i][2]}"
+            text = text + f"Amplitude = {self.FitsMadeVal[i][0]}\nMu = {self.FitsMadeVal[i][1]}\nError = {self.FitsMadeVal[i][2]}\n\n "
         return text
