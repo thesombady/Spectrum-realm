@@ -18,7 +18,9 @@ class Fitting:
         self.ylabel = " "
         self.NumberOfFits = 1
         self.FitsMade = []
+        self.FitsMadeVal = []
         self.ManualFits = []
+        self.ManualFitsVal = []
         self.ManualError =  []
         self.ManualArea = []
         self.Error = []
@@ -45,20 +47,22 @@ class Fitting:
         except Exception as e:
             raise e
         dlist = np.linspace(self.x[0],self.x[-1], len(self.x)*10)
-        self.ManualFits.append(dlist, func(np.linspace(self.x[0],self.x[-1], len(self.x)*10)))
+        self.ManualFits.append((dlist, func(np.linspace(self.x[0],self.x[-1], len(self.x)*10))))
+        self.ManualError.append(covarience)
+        self.ManualArea.append(RiemanSum(func, self.x[0], self.x[-1]))
 
-    def ManualInput(self, index, boundary, commit = False):
+    def ManualInput(self, index, boundary = 25):
         plt.plot(self.x, self.y, '.', markersize = 0.8, label = "Data")
-
-        plg.grid()
+        plt.axvline(self.x[index - boundary])
+        plt.axvline(self.x[index + boundary])
+        plt.grid()
         plt.legend()
         plt.title(self.Title)
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
         plt.savefig("Manual.png")
-        plt.cfg()
-        if commit == True:
-            self.Manual(index, boundary)
+        plt.clf()
+
 
     def AutoDetectPeaks(self):
         del self.FitsMade
@@ -74,7 +78,10 @@ class Fitting:
         dlist = np.linspace(self.x[0], self.x[-1], len(self.x)*10)
         for i in range(self.NumberOfFits):
             maximum = max(YVal)
-            index = int(np.where(YVal == maximum)[0])
+            try:
+                index = int(np.where(YVal == maximum)[0])
+            except:
+                break
             Xlist = XVal[index-bd:index +bd]
             Ylist = YVal[index-bd:index +bd]
             try:
@@ -91,6 +98,7 @@ class Fitting:
             self.FitsMade.append((dlist, ylist))
             self.Error.append(covarience)
             self.Area.append(RiemanSum(func, self.x[0], self.x[-1]))
+            self.FitsMadeVal.append((Fit[0], Fit[1], Fit[2]))
 
     def BackgroundCal(self, func):
         if not callable(func):
@@ -111,9 +119,23 @@ class Fitting:
                     Background = self.Background
                 plt.plot(self.FitsMade[i][0], self.FitsMade[i][1] + Background, '-', label = f"Fit to peak {i+1}")
                 #print(max(self.FitsMade[i][1]))
+            for i in range(len(self.ManualFits)):
+                if not isinstance(self.Background, (np.ndarray, np.generic)):
+                    Background = 0
+                else:
+                    Background = self.Background
+                plt.plot(self.ManualFits[i][0], self.ManualFits[i][1] + Background, label = f"Manual fits{i+1}")
             plt.legend()
             plt.grid()
             plt.savefig("Current.png")
             plt.clf()
         else:
             pass
+
+    def Data(self):
+        text = " "
+        for i in range(len(self.Error)):
+            text = text + f"Covarience {self.Error[i]} for automated peak {i+1}\n"
+            text = text + f"Area  = {self.Area[i]}for automated peak {i+1}\n"
+            text = text + f"Amplitude = {self.FitsMadeVal[i][0]}\n Mu = {self.FitsMadeVal[i][1]}\n Error = {self.FitsMadeVal[i][2]}"
+        return text
