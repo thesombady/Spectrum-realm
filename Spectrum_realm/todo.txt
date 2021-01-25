@@ -1,0 +1,6 @@
+1 Creating more import techniques. Have in PhysicsNum, either import or redo them.
+2 Choosing of import technique.
+3 Implement XRD techniques.
+4
+5
+6

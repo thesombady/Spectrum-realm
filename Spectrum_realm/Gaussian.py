@@ -18,6 +18,9 @@ class Fitting:
         self.ylabel = " "
         self.NumberOfFits = 1
         self.FitsMade = []
+        self.ManualFits = []
+        self.ManualError =  []
+        self.ManualArea = []
         self.Error = []
         self.Area = []
         self.Boundary = 25
@@ -31,8 +34,31 @@ class Fitting:
         plt.savefig("Orignal.png")
         plt.clf()
 
-    def Manual(self, index1, index2):
-        pass
+    def Manual(self, index, boundary):
+        xlist = self.x[index - boundary:index + boundary]; ylist = self.y[index - boundary:index + boundary]
+        gauss = lambda x, a, mu, sigma: a*np.exp(-(x - mu)**2/(2*sigma**2))
+        try:
+            mean = sum(xlist * ylist)/sum(ylist)
+            guesssigma = np.sqrt(sum(ylist * (xlist - mean)**2) / sum(ylist))
+            Fit, covarience = curve_fit(gauss, xlist, ylist, p0 = [max(ylist), mean, guesssigma])
+            func = lambda x: Fit[0]*np.exp(-(x-Fit[1])**2/(2*Fit[2]**2))
+        except Exception as e:
+            raise e
+        dlist = np.linspace(self.x[0],self.x[-1], len(self.x)*10)
+        self.ManualFits.append(dlist, func(np.linspace(self.x[0],self.x[-1], len(self.x)*10)))
+
+    def ManualInput(self, index, boundary, commit = False):
+        plt.plot(self.x, self.y, '.', markersize = 0.8, label = "Data")
+
+        plg.grid()
+        plt.legend()
+        plt.title(self.Title)
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
+        plt.savefig("Manual.png")
+        plt.cfg()
+        if commit == True:
+            self.Manual(index, boundary)
 
     def AutoDetectPeaks(self):
         del self.FitsMade

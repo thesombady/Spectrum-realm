@@ -6,11 +6,18 @@ import Parser
 from Gaussian import Fitting
 from PIL import Image, ImageTk
 import os
+
+
+
 def Find():
     global Data
     Path = filedialog.askopenfilename()
-    Data = Parser.Parser(Path)
-    Handler.Data = Fitting(Data)
+    try:
+        Data = Fitting(Parser.Parser(Path))
+    except:
+        messagebox.showwarning("Error", message="Loading data failed.")
+    Handler.Data = Data
+    Handler.Manual(root, Data)
 
 
 class Handler:
@@ -52,6 +59,10 @@ class Handler:
                 raise e
             self.View()
 
+    @classmethod
+    def Manual(cls, root, Data):
+        Btn2 = ttk.Button(root, text = "Manual Fits", command = lambda :ManualFits(root, Data)).grid(column = 1, row = 6)
+
     def View(self):
         load1 = Image.open(os.path.join(os.getcwd(),"Orignal.png"))
         render1 = ImageTk.PhotoImage(load1)
@@ -67,7 +78,14 @@ class Handler:
         except:
             pass
 
-
+class ManualFits(tk.Toplevel):
+    def __init__(self, master, Data):
+        super().__init__(master = master)
+        self.master = master
+        self.Data = Data
+        #Change geometry of this window
+        self.IntVar = tk.IntVar()
+        self.Scale = ttk.Scale(master = self.master).grid(column = 1, row= 1)
 
 
 
