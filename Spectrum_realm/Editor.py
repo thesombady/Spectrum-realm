@@ -19,6 +19,11 @@ def Find():
     HandlerProgram.View()
 
 
+def Progress(func):
+    """A wrapper function that creates a progressbar during the call of the function, and then removes it."""
+    def wrapper():
+        pass
+    pass
 class Handler:
     Data = None
     def __init__(self, root):
@@ -69,6 +74,7 @@ class Handler:
             messagebox.showwarning("Error", f"Needs a file")
         else:
             try:
+                self.progressbar.grid(column = 1, row = 11)
                 self.Data.NumberOfFits = int(self.NumberOfGaussiansval.get())
                 self.Data.Boundary = int(self.Boundaryval.get())
                 self.Data.AutoDetectPeaks()
