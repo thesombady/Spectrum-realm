@@ -14,7 +14,7 @@ def Linear(x,y):
     lin = lambda x, k,m: k*x+m
     try:
         func, covarience = curve_fit(lin, x,y)
-        return func, covarience, (lambda x: func[0]*x+ func[2])
+        return lambda x: func[0]*x+ func[1]#,func, covarience
     except Exception as e:
         raise e
 

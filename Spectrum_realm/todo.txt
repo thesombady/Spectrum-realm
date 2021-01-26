@@ -1,6 +1,6 @@
 1 Creating more import techniques. Have in PhysicsNum, either import or redo them.
 2 Choosing of import technique.
 3 Implement XRD techniques.
-4
+4 Improve Linear background
 5
 6

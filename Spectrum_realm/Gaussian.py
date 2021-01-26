@@ -1,4 +1,5 @@
-from Background import Exponential, Linear
+#from Background import Exponential, Linear
+import Background
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -7,6 +8,10 @@ from PhysicsNum import RiemanSum
 import time
 
 class Fitting:
+
+    Backgroundfunc ={"Exponential" : Background.Exponential,
+        "Linear" : Background.Linear}
+
     def __init__(self, Data):
         if not isinstance((Data[0],Data[1]), (np.generic, np.ndarray)):
             if isinstance((Data[0],Data[1]), (list, tuple)):
@@ -49,6 +54,7 @@ class Fitting:
             raise e
         dlist = np.linspace(self.x[0],self.x[-1], len(self.x)*10)
         self.ManualFits.append((dlist, func(np.linspace(self.x[0],self.x[-1], len(self.x)*10))))
+        self.ManualFitsVal.append((Fit[0], Fit[1], Fit[2]))
         self.ManualError.append(covarience)
         self.ManualArea.append(RiemanSum(func, self.x[0], self.x[-1]))
 
@@ -111,34 +117,40 @@ class Fitting:
         self.Background = ylist
 
     def PlotFits(self):
+        plt.plot(self.x, self.y, '.', markersize = 1, label = "Data")
         if len(self.FitsMade) != 0:
-            plt.plot(self.x, self.y, '.', markersize = 1, label = "Data")
             for i in range(len(self.FitsMade)):
                 if not isinstance(self.Background, (np.ndarray, np.generic)):
                     Background = 0
                 else:
                     Background = self.Background
                 plt.plot(self.FitsMade[i][0], self.FitsMade[i][1] + Background, '-', label = f"Fit to peak {i+1}")
-                #print(max(self.FitsMade[i][1]))
-            """
+        if len(self.ManualFits) != 0:
             for i in range(len(self.ManualFits)):
                 if not isinstance(self.Background, (np.ndarray, np.generic)):
                     Background = 0
                 else:
                     Background = self.Background
                 plt.plot(self.ManualFits[i][0], self.ManualFits[i][1] + Background, label = f"Manual fits{i+1}")
-            """
-            plt.legend()
-            plt.grid()
-            plt.savefig("Current.png")
-            plt.clf()
-        else:
-            pass
+        if isinstance(self.Background, (np.generic, np.ndarray)):
+            plt.plot(np.linspace(self.x[0], self.x[-1], len(self.x)*10),
+                self.Background,'-', label = "Background")
+        plt.legend()
+        plt.grid()
+        plt.savefig("Current.png")
+        plt.clf()
 
     def Data(self):
         text = " "
         for i in range(len(self.Error)):
-            text = text + f"Covarience {self.Error[i]} for automated peak {i+1}\n"
-            text = text + f"Area  = {self.Area[i]}for automated peak {i+1}\n"
-            text = text + f"Amplitude = {self.FitsMadeVal[i][0]}\nMu = {self.FitsMadeVal[i][1]}\nError = {self.FitsMadeVal[i][2]}\n\n "
+            text += f"_______Automated peak {i+1}_______\n"
+            text += f"Covarience {self.Error[i]}\n"
+            text += f"Area  = {self.Area[i]}\n"
+            text += f"Amplitude = {self.FitsMadeVal[i][0]}\nMu = {self.FitsMadeVal[i][1]}\nError = {self.FitsMadeVal[i][2]}\n\n "
+        text += "\n\n\n"
+        for i in range(len(self.ManualFits)):
+            text += f"_______Manual peak {i+1}_______\n"
+            text += f"Covarience {self.ManualError[i]} for manual peak {i+1}\n"
+            text += f"Area = {self.ManualArea[i]}\n"
+            text += f"Amplitude = {self.ManualFitsVal[i][0]}\nMu = {self.ManualFitsVal[i][1]}\nError = {self.ManualFitsVal[i][2]}\n\n"
         return text

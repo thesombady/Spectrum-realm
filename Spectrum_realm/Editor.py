@@ -6,8 +6,7 @@ import Parser
 from Gaussian import Fitting
 from PIL import Image, ImageTk
 import os
-
-
+import functools
 
 def Find():
     global Data
@@ -31,6 +30,11 @@ class Handler:
         Filemenu.add_command(label = "Load file", command = Find)
         Filemenu.add_command(label = "Manual fit", command = self.Manual)
         Menubar.add_cascade(label = "File", menu = Filemenu)
+        BackgroundMenu = tk.Menu(Menubar)
+        BackgroundMenu.add_checkbutton(label = "No Background")
+        BackgroundMenu.add_checkbutton(label = "Exponential Background", command = self.Exp)
+        BackgroundMenu.add_checkbutton(label = "Linear background", command = self.Lin)
+        Menubar.add_cascade(label = "Background", menu = BackgroundMenu)
         self.root.config(menu = Menubar)
 
 
@@ -45,6 +49,19 @@ class Handler:
         self.Boundary = ttk.Spinbox(self.root, from_ = 25, to = 100, textvariable = self.Boundaryval,
             command = self.Update).grid(column = 1, row = 7)
         Btn1 = ttk.Button(root, text = "Apply", command = self.Update).grid(column = 1, row = 9)
+
+    def Exp(self):
+        try:
+            self.Data.BackgroundCal(self.Data.Backgroundfunc["Exponential"])
+            self.View()
+        except Exception as e:
+            raise e
+    def Lin(self):
+        try:
+            self.Data.BackgroundCal(self.Data.Backgroundfunc["Linear"])
+            self.View()
+        except Exception as e:
+            raise e
 
 
     def Update(self):
