@@ -6,6 +6,7 @@ import os
 from scipy.optimize import curve_fit
 from PhysicsNum import RiemanSum
 import time
+import math
 
 class Fitting:
 
@@ -33,6 +34,8 @@ class Fitting:
         self.Area = []
         self.Boundary = 25
         self.PlotData()
+        self.PathCurrent = os.path.join(os.getcwd(), "Current.png")
+        self.PathManual = os.path.join(os.getcwd(), "Manual.png")
 
     def PlotData(self):
         plt.plot(self.x,self.y, '.', markersize=2)
@@ -75,9 +78,11 @@ class Fitting:
         del self.FitsMade
         del self.Error
         del self.Area
+        del self.FitsMadeVal
         self.Error = []
         self.Area = []
         self.FitsMade = []
+        self.FitsMadeVal = []
         XVal = self.x.copy()
         YVal = self.y.copy()
         gauss = lambda x, a, mu, sigma: a*np.exp(-(x - mu)**2/(2*sigma**2))
@@ -137,6 +142,9 @@ class Fitting:
                 self.Background,'-', label = "Background")
         plt.legend()
         plt.grid()
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
+        plt.title(self.Title)
         plt.savefig("Current.png")
         plt.clf()
 
@@ -153,4 +161,36 @@ class Fitting:
             text += f"Covarience {self.ManualError[i]} for manual peak {i+1}\n"
             text += f"Area = {self.ManualArea[i]}\n"
             text += f"Amplitude = {self.ManualFitsVal[i][0]}\nMu = {self.ManualFitsVal[i][1]}\nError = {self.ManualFitsVal[i][2]}\n\n"
+        try:
+            text += str(self.Miller)
+        except Exception as e:
+            print(e)
         return text
+
+    def Compute(self, a = 1, b = None, c = None, alpha = 1, Beta = 1, gamma = 0, Accurarcy = 0.01, wavelength = 1.54):
+        """Will compute if one says it's xray XRD-spectrum."""
+        Distance = []#Distance between planes
+        for i in range(len(self.FitsMadeVal)):
+            val = math.radians(self.FitsMadeVal[i][1]/2)
+            d = wavelength/(2*math.sin(val))
+            Distance.append([d, self.FitsMadeVal[i][1]])
+        for i in range(len(self.ManualFitsVal)):
+            val = math.radians(self.ManualFitsVal[i][1]/2)
+            d = wavelength/(2*math.sin(val))
+            Distnce.append([d, self.ManualFitsVal[i][1]])
+        Miller = {}
+        if b == None or c == None:
+            if b == None:
+                b = a
+            if c == None:
+                c = a
+            else:
+                b, c = a, a
+        for h in [0,1,2,3,4]:
+            for k in [0,1,2,3,4]:
+                for l in [0,1,2,3,4]:
+                    for i in range(len(Distance)):
+                        Difference = abs((1/Distance[i][0])**2 - ((h/a)**2 + (k/b)**2 + (l/c)**2))
+                        if Difference < Accurarcy:
+                            Miller[f'Peak at {Distance[i][1]}'] =  f"({h},{k},{l})"
+        self.Miller = Miller
